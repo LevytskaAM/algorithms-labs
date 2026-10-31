@@ -1,0 +1,55 @@
+import math
+
+# Словник українського алфавіту
+UKR_ALPHABET = {
+    'А': 1, 'Б': 2, 'В': 3, 'Г': 4, 'Ґ': 5, 'Д': 6, 'Е': 7, 'Є': 8, 'Ж': 9, 'З': 10,
+    'И': 11, 'І': 12, 'Ї': 13, 'Й': 14, 'К': 15, 'Л': 16, 'М': 17, 'Н': 18, 'О': 19,
+    'П': 20, 'Р': 21, 'С': 22, 'Т': 23, 'У': 24, 'Ф': 25, 'Х': 26, 'Ц': 27, 'Ч': 28,
+    'Ш': 29, 'Щ': 30, 'Ь': 31, 'Ю': 32, 'Я': 33
+}
+
+WORDS = ["ЧУЖУ", "БІДУ", "РУКАМИ", "РОЗВЕДУ", "А", "ДО", "СВОЄЇ", "РОЗУМУ", "НЕ", "ДІЙДУ"]
+A_CONST = (math.sqrt(5) - 1) / 2
+
+def get_word_key(word: str) -> int:
+    return sum(UKR_ALPHABET.get(char, 0) for char in word.upper())
+
+def hash_division(key: int, m: int = 13) -> int:
+    return key % m
+
+def hash_multiplication(key: int, m: int = 16) -> int:
+    return math.floor(m * ((key * A_CONST) % 1))
+
+def build_open_hash_table(words: list, m: int, hash_func) -> list:
+    table = [[] for _ in range(m)]
+    for word in words:
+        table[hash_func(get_word_key(word))].append(word)
+    return table
+
+def build_closed_hash_table(words: list, m: int, hash_func) -> list:
+    table = [None] * m
+    for word in words:
+        start_idx = hash_func(get_word_key(word))
+        for i in range(m):
+            idx = (start_idx + i) % m
+            if table[idx] is None:
+                table[idx] = word
+                break
+    return table
+
+# Тестування
+print("=== ВІДКРИТА ХЕШ-ТАБЛИЦЯ (ДІЛЕННЯ M=13) ===")
+for i, chain in enumerate(build_open_hash_table(WORDS, 13, hash_division)):
+    print(f"Індекс {i:02d}: {chain}")
+
+print("\n=== ЗАКРИТА ХЕШ-ТАБЛИЦЯ (ДІЛЕННЯ M=13) ===")
+for i, item in enumerate(build_closed_hash_table(WORDS, 13, hash_division)):
+    print(f"Індекс {i:02d}: {item if item else '(NULL)'}")
+
+print("\n=== ВІДКРИТА ХЕШ-ТАБЛИЦЯ (МНОЖЕННЯ M=16) ===")
+for i, chain in enumerate(build_open_hash_table(WORDS, 16, hash_multiplication)):
+    print(f"Індекс {i:02d}: {chain}")
+
+print("\n=== ЗАКРИТА ХЕШ-ТАБЛИЦЯ (МНОЖЕННЯ M=16) ===")
+for i, item in enumerate(build_closed_hash_table(WORDS, 16, hash_multiplication)):
+    print(f"Індекс {i:02d}: {item if item else '(NULL)'}")
